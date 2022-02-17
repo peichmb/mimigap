@@ -6,7 +6,11 @@
  *							*
  ********************************************************/
 
+
 #include "gap.h"
+
+// A vector of Stand objects representing the forest
+std::vector<Stand> forest;
 
 int main() {
 

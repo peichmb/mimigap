@@ -4,7 +4,8 @@ BLD := build
 OBJ := $(BLD)/obj
 SOURCES = $(wildcard $(SRC)/*.cpp)
 OBJECTS = $(patsubst $(SRC)/%.cpp, $(OBJ)/%.o, $(SOURCES))
-BIN := $(BLD)/gap
+#BIN := $(BLD)/gap
+BIN := gap
 
 $(BIN): $(OBJECTS)
 	$(CXX) -o $@ $^
