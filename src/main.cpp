@@ -6,13 +6,27 @@
  *							*
  ********************************************************/
 
-
+#include <iostream>
 #include "gap.h"
 
-// A vector of Stand objects representing the forest
-std::vector<Stand> forest;
-
 int main() {
+
+	// Initialize model
+	initialize_gap();
+
+	// Create forest object
+	Forest forest;
+
+	Tree tree(3);
+	std::cout << tree.pft.name << "\n";
+
+	std::cout << tree.diameter() << "\n";
+	for (int year=0; year<200; year++) {
+		tree.growth();
+		std::cout << year << " "
+			  << tree.diameter() << " "
+			  << tree.height() << "\n";
+	}
 
 	return 0;
 }
