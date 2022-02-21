@@ -7,8 +7,8 @@
 
 class Forest;
 
-// There are 2 types of tree in JABOWA 1:
-typedef enum {SHADE_INTOLERANT=1, SHADE_TOLERANT=2} tree_type;
+// Wrt establishment, there are 3 types of trees in JABOWA v. 1
+typedef enum {CHERRY=0, BIRCH=1, SHADE_TOLERANT=2} tree_type;
 
 // Static parameters of a PFT
 struct Pft {
@@ -35,30 +35,43 @@ public:
 	Tree(int pft_id);
 	~Tree();
 	void growth();
+	int age();
 	double diameter();
+	double diameter_change();
 	double height();
+	double weight();
 
 private:
 	int pft_id;
-	double h;
-	double d;
-	double r_light(double al);
+	int tree_age;
+	double h; // Height
+	double d; // Diameter
+	double d_change; // Change in diameter this year
+	double w; // Weight
 	void update_height();
+	void update_weight();
+	double r_light(double al);
 };
 
 // Stand class
 class Stand {
 
 public:
-	//Forest& forest;
-	double weight;
-	double weight_cherry;
-	double weight_birch;
 	//Stand(Forest& parent_forest);
 	Stand();
 	~Stand();
 
+	//Forest& forest;
+	// Advance to next time step
+	void advance();
+
 private:
+
+	double weight;
+
+	void birth();
+	void kill();
+	void growth();
 	std::list<Tree> trees;
 };
 

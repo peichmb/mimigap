@@ -18,6 +18,7 @@ int main() {
 	Forest forest;
 
 	Tree tree(3);
+	/*
 	std::cout << tree.pft.name << "\n";
 
 	std::cout << tree.diameter() << "\n";
@@ -27,6 +28,7 @@ int main() {
 			  << tree.diameter() << " "
 			  << tree.height() << "\n";
 	}
+	*/
 
 	return 0;
 }
