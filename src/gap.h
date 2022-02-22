@@ -88,4 +88,6 @@ private:
 
 void initialize_gap();
 
+int npft();
+
 #endif // GAP_H

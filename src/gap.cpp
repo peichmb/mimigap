@@ -1,8 +1,8 @@
-#include <vector>
 #include <math.h>
-#include "gap.h"
-#include <iostream>
 #include <stdlib.h>
+#include <iostream>
+#include <vector>
+#include "gap.h"
 
 namespace {
 
@@ -32,7 +32,7 @@ namespace {
 // 	class Tree     //
 // --------------------//
 
-Tree::Tree (int pft_id) : pft(pft_vector[pft_id]), pft_id(pft_id) {
+Tree::Tree(int pft_id) : pft(pft_vector[pft_id]), pft_id(pft_id) {
 	// WORKSHOP: Initialize these to zero to let them catch the bug.
 	tree_age = 0;
 	d = DIAMETER_MIN;
@@ -221,3 +221,5 @@ void initialize_gap() {
 	// Initialize random number generator
 	srand(SEED);
 }
+
+int npft() { return pft_vector.size(); }

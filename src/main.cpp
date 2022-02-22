@@ -15,20 +15,13 @@ int main() {
 	initialize_gap();
 
 	// Create forest object
-	Forest forest;
+	//Forest forest;
 
-	Tree tree(3);
-	/*
-	std::cout << tree.pft.name << "\n";
-
-	std::cout << tree.diameter() << "\n";
-	for (int year=0; year<200; year++) {
-		tree.growth();
-		std::cout << year << " "
-			  << tree.diameter() << " "
-			  << tree.height() << "\n";
+	for (int p=0; p<13; p++) {
+		Tree tree(p);
+		for (int t=0; t < tree.pft.age_max; t++) {}
+		std::cout << tree.pft.age_max << "\n";
 	}
-	*/
 
 	return 0;
 }
