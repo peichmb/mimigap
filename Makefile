@@ -15,4 +15,4 @@ $(OBJ)/%.o: $(SRC)/%.cpp
 	$(CXX) -o $@ -c $<
 
 clean:
-	rm -r $(BLD)
+	$(RM) -r $(BLD)

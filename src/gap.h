@@ -7,7 +7,7 @@
 
 class Forest;
 
-// Wrt establishment, there are 3 types of trees in JABOWA v. 1
+// Wrt establishment, there are 3 types of trees in JABOWA v1
 typedef enum {CHERRY=0, BIRCH=1, SHADE_TOLERANT=2} tree_type;
 
 // Static parameters of a PFT
@@ -53,13 +53,13 @@ private:
 	double r_light(double al);
 };
 
-// Stand class
-class Stand {
+// Plot class
+class Plot {
 
 public:
-	//Stand(Forest& parent_forest);
-	Stand();
-	~Stand();
+	//Plot(Forest& parent_forest);
+	Plot();
+	~Plot();
 
 	//Forest& forest;
 	// Advance to next time step
@@ -83,7 +83,7 @@ public:
 	~Forest();
 private:
 	double degd;
-	std::vector<Stand> stands;
+	std::vector<Plot> stands;
 };
 
 void initialize_gap();

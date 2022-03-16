@@ -86,19 +86,19 @@ Tree::~Tree() {}
 
 
 // ---------------------//
-// 	class Stand     //
+// 	class Plot     //
 // ---------------------//
 
-//Stand::Stand(Forest& parent_forest) : forest(parent_forest) {}
-Stand::Stand() {
+//Plot::Plot(Forest& parent_forest) : forest(parent_forest) {}
+Plot::Plot() {
 	// This is a property of the SITE, when done creating stand move up the hierarchy
 	const double degd = 4000.;
 	weight = 0.;
 }
 
-Stand::~Stand() {}
+Plot::~Plot() {}
 
-void Stand::advance() {
+void Plot::advance() {
 
 	// Add new trees
 	birth();
@@ -108,7 +108,7 @@ void Stand::advance() {
 	growth();
 }
 
-void Stand::birth() {
+void Plot::birth() {
 
 	// First the shade tolerant plants
 	int new_shade_tolerant_pft_index = rand() % shade_tolerant_pfts.size();
@@ -138,7 +138,7 @@ void Stand::birth() {
 	}
 }
 
-void Stand::kill() {
+void Plot::kill() {
 
 	// First death mechanism
 	for (std::list<Tree>::iterator it=trees.begin(); it != trees.end(); it++) {
@@ -147,7 +147,7 @@ void Stand::kill() {
 		double p = 1. - pow((1. - 4./tree.pft.age_max), tree.age());
 		if ((double)rand()/RAND_MAX < p) {
 			// Remove tree from list
-			it = trees.erase(it);
+			it = --trees.erase(it);
 		}
 	}
 
@@ -157,13 +157,15 @@ void Stand::kill() {
 		// Probability of dying this year
 		// Bug for debugging training: forget the (double) cast
 		if (tree.diameter_change() < 0.01 && (double)rand()/RAND_MAX < 0.368) {
-			// Remove tree from list
-			it = trees.erase(it);
+			// Remove tree from list and set iterator to previous element
+			// so that it points to the correct element when the
+			// iterator is incremented
+			it = --trees.erase(it);
 		}
 	}
 }
 
-void Stand::growth() {
+void Plot::growth() {
 	// Reset stand weight
 	weight = 0.;
 	// Nice bug to train debugging: forget the & in the line below
