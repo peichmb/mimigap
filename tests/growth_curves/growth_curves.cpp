@@ -11,7 +11,9 @@ int main() {
 			  << tree.pft.h_max << " "
 			  << tree.pft.age_max << "\n";
 		for (int t=0; t<tree.pft.age_max + 25 + 1; t++) {
-			std::cout << t << " " << tree.diameter() << " " << tree.height() << "\n";
+			std::cout << t << " " << tree.diameter() << " "
+					      << tree.height() << " "
+					      << tree.weight() << "\n";
 			tree.growth();
 		}
 	}

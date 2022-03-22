@@ -13,10 +13,10 @@ namespace {
 	const int SEED = 123;
 
 	// Cherry trees establishment cutoff
-	const double CHERRY_CUTOFF = 100.;
+	const double CHERRY_CUTOFF = 15000.;
 
 	// Birch trees establishment cutoff
-	const double BIRCH_CUTOFF = 200.;
+	const double BIRCH_CUTOFF = 20000.;
 
 	// Vector containing the static PFT parameters
 	std::vector<Pft> pft_vector;
@@ -110,6 +110,8 @@ void Plot::advance() {
 
 void Plot::birth() {
 
+	// TODO: PFT selection must be based on bioclimatic limits. See B72, p. 857.
+
 	// First the shade tolerant plants
 	int new_shade_tolerant_pft_index = rand() % shade_tolerant_pfts.size();
 	int new_shade_tolerant_pft = shade_tolerant_pfts[new_shade_tolerant_pft_index];
@@ -195,7 +197,7 @@ void initialize_gap() {
 	//
 	// 				Name        g      c  age_max              type  d_max  h_max    b2     b3 dgde_min dgde_max  wmin  wmax
 	pft_vector.push_back(Pft {"Sugar maple",   170., 1.57 ,     200,   SHADE_TOLERANT, 152.5, 4011., 50.9, 0.167,   2000.,   6300., 300.,  -1.});
-	pft_vector.push_back(Pft {"Beech", 	 150., 2.20 ,       300,   SHADE_TOLERANT, 122.0, 3660., 57.8, 0.237,   2100.,   6000., 300.,  -1.});
+	pft_vector.push_back(Pft {"Beech", 	   150., 2.20 ,     300,   SHADE_TOLERANT, 122.0, 3660., 57.8, 0.237,   2100.,   6000., 300.,  -1.});
 	pft_vector.push_back(Pft {"Yellow birch",  100., 0.486,     300,            BIRCH, 122.0, 3050., 47.8, 0.196,   2000.,   5300., 250.,  -1.});
 	pft_vector.push_back(Pft {"White ash",     130., 1.75 ,     100,   SHADE_TOLERANT,  50.0, 2160., 80.2, 0.802,   2100.,  10700., 320.,  -1.});
 	pft_vector.push_back(Pft {"Mt. maple",     100., 1.13 ,      25,   SHADE_TOLERANT,  13.5,  500., 53.8, 2.0  ,   2000.,   6300., 320.,  -1.});
@@ -208,7 +210,7 @@ void initialize_gap() {
 	pft_vector.push_back(Pft {"Mt. ash",       150., 1.75 ,      30,   SHADE_TOLERANT,  10.0,  500., 72.6, 3.63 ,   2000.,   4000., 300.,  -1.});
 	pft_vector.push_back(Pft {"Red maple",     240., 1.75 ,     150,   SHADE_TOLERANT, 152.5, 3660., 46.3, 0.152,   2000.,  12400., 300.,  -1.});
 
-	// Vectors containing the indexes of shade (in)tolerant trees on the pft_vector
+	// Vectors containing the indices of shade (in)tolerant trees on the pft_vector
 	for (int i=0; i<pft_vector.size(); i++) {
 		Pft& pft = pft_vector[i];
 		if (pft.type == SHADE_TOLERANT) {

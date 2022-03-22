@@ -1,8 +1,9 @@
 /********************************************************
  *							*
- *	MINIGAP - A mini-sized forest simulator		*
- *	Based on JABOWA (Botkin et. al, 1972)		*
+ *	MINIGAP - A C++ implementation of JABOWA v1	*
+ *	Botkin, Janak and Wallis (1972)			*
  *	https://doi.org/10.2307/2258570			*
+ *							*
  *							*
  ********************************************************/
 
@@ -19,7 +20,7 @@ int main() {
 
 	for (int p=0; p<npft(); p++) {
 		Tree tree(p);
-		for (int t=0; t < tree.pft.age_max; t++) {}
+		for (int t=0; t<tree.pft.age_max; t++) {}
 		std::cout << tree.pft.age_max << "\n";
 	}
 

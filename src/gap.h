@@ -83,7 +83,7 @@ public:
 	~Forest();
 private:
 	double degd;
-	std::vector<Plot> stands;
+	std::vector<Plot> plots;
 };
 
 void initialize_gap();
