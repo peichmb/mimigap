@@ -5,7 +5,7 @@ OBJ := $(BLD)/obj
 SOURCES = $(wildcard $(SRC)/*.cpp)
 OBJECTS = $(patsubst $(SRC)/%.cpp, $(OBJ)/%.o, $(SOURCES))
 #BIN := $(BLD)/gap
-BIN := gap
+BIN := gap.x
 
 $(BIN): $(OBJECTS)
 	$(CXX) -o $@ $^
@@ -16,3 +16,4 @@ $(OBJ)/%.o: $(SRC)/%.cpp
 
 clean:
 	$(RM) -r $(BLD)
+	$(RM) $(BIN)

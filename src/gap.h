@@ -40,6 +40,9 @@ public:
 	double diameter_change();
 	double height();
 	double weight();
+	double basal_area();
+	void set_sla(double s);
+	double get_sla();
 
 private:
 	int pft_id;
@@ -48,9 +51,12 @@ private:
 	double d; // Diameter
 	double d_change; // Change in diameter this year
 	double w; // Weight
+	double ba; // Basal_area
+	double sla; // Shading leaf area
 	void update_height();
 	void update_weight();
-	double r_light(double al);
+	void update_basal_area();
+	double r_light();
 };
 
 // Plot class
@@ -65,9 +71,13 @@ public:
 	// Advance to next time step
 	void advance();
 
+	// Print out plot info
+	void print();
+
 private:
 
 	double weight;
+	double basal_area;
 
 	void birth();
 	void kill();
@@ -79,15 +89,18 @@ private:
 class Forest {
 
 public:
-	Forest();
+	Forest(int nplots);
+	int nplots();
+	void advance();
 	~Forest();
 private:
-	double degd;
 	std::vector<Plot> plots;
 };
 
 void initialize_gap();
 
 int npft();
+
+void increase_simulation_year();
 
 #endif // GAP_H

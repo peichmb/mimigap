@@ -6,17 +6,27 @@
 
 namespace {
 
+	// PI
+	const double PI = 3.14159265358979323846;
+
 	// Minimum tree diameter
 	const double DIAMETER_MIN = 0.5;
 
 	// Seed to initialize the random number generator
-	const int SEED = 123;
+	const int SEED = 74837891;
 
 	// Cherry trees establishment cutoff
-	const double CHERRY_CUTOFF = 15000.;
+	const double CHERRY_CUTOFF = 100.;
 
 	// Birch trees establishment cutoff
-	const double BIRCH_CUTOFF = 20000.;
+	const double BIRCH_CUTOFF = 300.;
+
+	// Light extinction coefficient
+	const double K_EXT = 1/6000;
+
+	// This is a property of the SITE, when done creating stand move up the hierarchy
+	// I'm not even using it in the current version, delete probably.
+	const double degd = 2500.;
 
 	// Vector containing the static PFT parameters
 	std::vector<Pft> pft_vector;
@@ -25,6 +35,9 @@ namespace {
 	std::vector<int> shade_tolerant_pfts;
 	std::vector<int> cherry_pfts;
 	std::vector<int> birch_pfts;
+
+	// Simulation year (maybe in framework)
+	int simulation_year;
 }
 
 
@@ -35,10 +48,13 @@ namespace {
 Tree::Tree(int pft_id) : pft(pft_vector[pft_id]), pft_id(pft_id) {
 	// WORKSHOP: Initialize these to zero to let them catch the bug.
 	tree_age = 0;
-	d = DIAMETER_MIN;
+	double small_random_addition = ((double)rand()/RAND_MAX) * 0.1 * DIAMETER_MIN;
+	d = DIAMETER_MIN + small_random_addition;
 	d_change = 1.; // Ensures that the tree doesn't die right after it's born
+	sla = 0.;
 	update_height();
 	update_weight(); // Probably don't need to do this here
+	update_basal_area(); // Probably don't need to do this here
 }
 
 void Tree::growth() {
@@ -46,8 +62,11 @@ void Tree::growth() {
 	// Calculate change in tree diameter over 1 year (B79, Eq. 5)
 	d_change = pft.g*d*(1.-d*h/(pft.d_max * pft.h_max))
 			/ (274 + 3.*pft.b2*d - 4.*pft.b3*d*d);
+
 	// Environmental factors affecting growth
-	double f_env = 1.;
+	
+	double f_env = r_light();
+
 	d_change = d_change*f_env;
 	// Update diameter
 	d = d + d_change;
@@ -55,6 +74,8 @@ void Tree::growth() {
 	update_height();
 	// Update weight
 	update_weight();
+	// Update basal_area
+	update_basal_area();
 	// Update age
 	tree_age++;
 }
@@ -65,15 +86,25 @@ double Tree::height() { return h; }
 
 double Tree::weight() { return w; }
 
+double Tree::basal_area() { return ba; }
+
 int Tree::age() { return tree_age; }
 
 double Tree::diameter_change() { return d_change; }
+
+void Tree::set_sla(double s) { sla = s; }
+
+double Tree::get_sla() { return sla; }
 
 void Tree::update_height() { h = 137 + pft.b2*d - pft.b3*d*d; }
 
 void Tree::update_weight() { w = pft.c*d*d; }
 
-double Tree::r_light(double al) {
+void Tree::update_basal_area() { ba = 0.25*PI*d*d; }
+
+double Tree::r_light() {
+
+	double al = exp(-K_EXT*sla);
 
 	if (pft.type == SHADE_TOLERANT) {
 		return 1. - exp(-4.64*(al-0.05));
@@ -91,8 +122,6 @@ Tree::~Tree() {}
 
 //Plot::Plot(Forest& parent_forest) : forest(parent_forest) {}
 Plot::Plot() {
-	// This is a property of the SITE, when done creating stand move up the hierarchy
-	const double degd = 4000.;
 	weight = 0.;
 }
 
@@ -100,12 +129,38 @@ Plot::~Plot() {}
 
 void Plot::advance() {
 
+	weight = 0.;
+	basal_area = 0.;
+	for (auto& tree : trees) {
+		weight += tree.weight();
+		basal_area += tree.basal_area();
+	}
+
 	// Add new trees
 	birth();
 	// Kill trees
 	kill();
 	// Grow remaining trees
 	growth();
+}
+
+void Plot::print() {
+
+	std::cout << simulation_year << ", " 
+		  << trees.size() << ", "
+		  << weight << ", "
+		  << basal_area << ", "
+		  << "\n";
+//	for (auto& tree : trees) {
+//		std::cout << tree.age() << " "
+//		  << tree.diameter() << " "
+//			  << tree.height() << " "
+//			  << tree.weight() << " "
+//			  << tree.basal_area() << "\n";
+//
+//	}
+	//std::cout << trees.size() << "\n";
+	//std::cout << weight << "\n";
 }
 
 void Plot::birth() {
@@ -146,7 +201,7 @@ void Plot::kill() {
 	for (std::list<Tree>::iterator it=trees.begin(); it != trees.end(); it++) {
 		Tree& tree = *it;
 		// Probability of dying this year
-		double p = 1. - pow((1. - 4./tree.pft.age_max), tree.age());
+		double p = 1. - pow((1. - 4./(double)tree.pft.age_max), tree.age());
 		if ((double)rand()/RAND_MAX < p) {
 			// Remove tree from list
 			it = --trees.erase(it);
@@ -168,23 +223,52 @@ void Plot::kill() {
 }
 
 void Plot::growth() {
-	// Reset stand weight
-	weight = 0.;
+
+	// First calculate shading leaf area for each tree
+	for (auto& tree : trees) {
+		double sla = 0;
+		for (auto& tree1 : trees) {
+			if (tree1.height() > tree.height()) {
+				sla += tree1.weight();
+			}
+		}
+		tree.set_sla(sla);
+	}
+
 	// Nice bug to train debugging: forget the & in the line below
 	for (auto& tree : trees) {
 		// Grow tree
 		tree.growth();
-		// Add new tree's mass to stand's total
+		// Add new tree's leaf mass to stand's total
 		weight += tree.weight();
 	}
 }
+
 
 // ---------------------//
 // 	class Forest     //
 // ---------------------//
 
-Forest::Forest() {}
-Forest::~Forest() {}
+Forest::Forest(int nplots) {
+	for (int i=0; i<nplots; i++) {
+		plots.push_back(Plot());
+	}
+}
+
+int Forest::nplots() {
+	return plots.size();
+}
+
+void Forest::advance() {
+	for (auto& plot : plots) {
+		plot.advance();
+		plot.print();
+	}
+}
+
+Forest::~Forest() {
+	//
+}
 
 
 // ---------------------------- //
@@ -224,6 +308,15 @@ void initialize_gap() {
 
 	// Initialize random number generator
 	srand(SEED);
+
+	// Set simulation year to 0
+	simulation_year = 0;
 }
 
-int npft() { return pft_vector.size(); }
+int npft() {
+	return pft_vector.size();
+}
+
+void increase_simulation_year() {
+	simulation_year++;
+}
