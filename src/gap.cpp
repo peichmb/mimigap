@@ -17,10 +17,10 @@ namespace {
 	const int SEED = 74837891;
 
 	// Cherry trees establishment cutoff
-	const double CHERRY_CUTOFF = 100.;
+	const double CHERRY_CUTOFF = 200.;
 
 	// Birch trees establishment cutoff
-	const double BIRCH_CUTOFF = 200.;
+	const double BIRCH_CUTOFF = 300.;
 
 	// Light extinction coefficient
 	const double K_EXT = 1/6000;
