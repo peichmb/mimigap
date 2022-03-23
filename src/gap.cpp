@@ -17,13 +17,13 @@ namespace {
 	const int SEED = 74837891;
 
 	// Cherry trees establishment cutoff
-	const double CHERRY_CUTOFF = 200.;
+	const double CHERRY_CUTOFF = 1000.;
 
 	// Birch trees establishment cutoff
-	const double BIRCH_CUTOFF = 300.;
+	const double BIRCH_CUTOFF = 3000.;
 
 	// Light extinction coefficient
-	const double K_EXT = 1/6000;
+	const double K_EXT = 1/6000.;
 
 	// This is a property of the SITE, when done creating stand move up the hierarchy
 	// I'm not even using it in the current version, delete probably.
@@ -156,9 +156,9 @@ double Tree::r_light() {
 Tree::~Tree() {}
 
 
-// ---------------------//
-// 	class Plot     //
-// ---------------------//
+// --------------------- //
+// 	class Plot       //
+// --------------------- //
 
 Plot::Plot() {
 	weight = 0.;
@@ -288,9 +288,9 @@ void Plot::growth() {
 }
 
 
-// ---------------------//
+// --------------------- //
 // 	class Forest     //
-// ---------------------//
+// --------------------- //
 
 Forest::Forest(int nplots) {
 	for (int i=0; i<nplots; i++) {
