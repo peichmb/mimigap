@@ -10,10 +10,12 @@ int main() {
 			  << tree.pft.d_max << " "
 			  << tree.pft.h_max << " "
 			  << tree.pft.age_max << "\n";
-		for (int t=0; t<tree.pft.age_max + 25 + 1; t++) {
+		for (int t=0; t<tree.pft.age_max + 1 + 5; t++) {
 			std::cout << t << " " << tree.diameter() << " "
 					      << tree.height() << " "
-					      << tree.weight() << "\n";
+					      << tree.weight() << " "
+					      << tree.basal_area() << " "
+					      << "\n";
 			tree.growth();
 		}
 	}

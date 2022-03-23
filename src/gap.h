@@ -12,7 +12,9 @@ typedef enum {CHERRY=0, BIRCH=1, SHADE_TOLERANT=2} tree_type;
 
 // Static parameters of a PFT
 struct Pft {
+	static int npft;
 	const std::string name;
+	const int id;
 	const double g;
 	const double c;
 	const double age_max;
@@ -25,6 +27,10 @@ struct Pft {
 	const double degd_max;
 	const double wmin;
 	const double wmax;
+
+	Pft(const char* name, double g, double c, double age_max, tree_type type,
+	    double d_max, double h_max, double b2, double b3,
+	    double degd_min, double degd_max, double wmin, double wmax);
 };
 
 // Tree class
@@ -71,8 +77,8 @@ public:
 	// Advance to next time step
 	void advance();
 
-	// Print out plot info
-	void print();
+	// Return plot info string
+	std::string info();
 
 private:
 
@@ -92,6 +98,7 @@ public:
 	Forest(int nplots);
 	int nplots();
 	void advance();
+	void dump_output();
 	~Forest();
 private:
 	std::vector<Plot> plots;
@@ -102,5 +109,7 @@ void initialize_gap();
 int npft();
 
 void increase_simulation_year();
+
+std::string get_header();
 
 #endif // GAP_H

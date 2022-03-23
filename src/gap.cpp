@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <iostream>
+#include <cstdio>
 #include <vector>
 #include "gap.h"
 
@@ -19,7 +20,7 @@ namespace {
 	const double CHERRY_CUTOFF = 100.;
 
 	// Birch trees establishment cutoff
-	const double BIRCH_CUTOFF = 300.;
+	const double BIRCH_CUTOFF = 200.;
 
 	// Light extinction coefficient
 	const double K_EXT = 1/6000;
@@ -38,8 +39,26 @@ namespace {
 
 	// Simulation year (maybe in framework)
 	int simulation_year;
+
+	std::string output_header;
+
 }
 
+// PFT counter
+int Pft::npft = 0;
+
+// --------------------//
+// 	struct PFT     //
+// --------------------//
+
+Pft::Pft(const char* name, double g, double c, double age_max, tree_type type,
+    double d_max, double h_max, double b2, double b3,
+    double degd_min, double degd_max, double wmin, double wmax) :
+    name(name), id(Pft::npft), g(g), c(c), age_max(age_max), type(type), d_max(d_max), h_max(h_max),
+    b2(b2), b3(b3), degd_min(degd_min), degd_max(degd_max), wmin(wmin), wmax(wmax)
+{
+	Pft::npft++;
+}
 
 // --------------------//
 // 	class Tree     //
@@ -64,10 +83,9 @@ void Tree::growth() {
 			/ (274 + 3.*pft.b2*d - 4.*pft.b3*d*d);
 
 	// Environmental factors affecting growth
-	
 	double f_env = r_light();
-
 	d_change = d_change*f_env;
+
 	// Update diameter
 	d = d + d_change;
 	// Update height
@@ -80,27 +98,49 @@ void Tree::growth() {
 	tree_age++;
 }
 
-double Tree::diameter() { return d; }
+double Tree::diameter() {
+	return d;
+}
 
-double Tree::height() { return h; }
+double Tree::height() {
+	return h;
+}
 
-double Tree::weight() { return w; }
+double Tree::weight() {
+	return w;
+}
 
-double Tree::basal_area() { return ba; }
+double Tree::basal_area() {
+	return ba;
+}
 
-int Tree::age() { return tree_age; }
+int Tree::age() {
+	return tree_age;
+}
 
-double Tree::diameter_change() { return d_change; }
+double Tree::diameter_change() {
+	return d_change;
+}
 
-void Tree::set_sla(double s) { sla = s; }
+void Tree::set_sla(double s) {
+	sla = s;
+}
 
-double Tree::get_sla() { return sla; }
+double Tree::get_sla() {
+	return sla;
+}
 
-void Tree::update_height() { h = 137 + pft.b2*d - pft.b3*d*d; }
+void Tree::update_height() {
+	h = 137 + pft.b2*d - pft.b3*d*d;
+}
 
-void Tree::update_weight() { w = pft.c*d*d; }
+void Tree::update_weight() {
+	w = pft.c*d*d;
+}
 
-void Tree::update_basal_area() { ba = 0.25*PI*d*d; }
+void Tree::update_basal_area() {
+	ba = 0.25*PI*d*d;
+}
 
 double Tree::r_light() {
 
@@ -120,9 +160,9 @@ Tree::~Tree() {}
 // 	class Plot     //
 // ---------------------//
 
-//Plot::Plot(Forest& parent_forest) : forest(parent_forest) {}
 Plot::Plot() {
 	weight = 0.;
+	basal_area = 0.;
 }
 
 Plot::~Plot() {}
@@ -144,23 +184,26 @@ void Plot::advance() {
 	growth();
 }
 
-void Plot::print() {
+std::string Plot::info() {
 
-	std::cout << simulation_year << ", " 
-		  << trees.size() << ", "
-		  << weight << ", "
-		  << basal_area << ", "
-		  << "\n";
-//	for (auto& tree : trees) {
-//		std::cout << tree.age() << " "
-//		  << tree.diameter() << " "
-//			  << tree.height() << " "
-//			  << tree.weight() << " "
-//			  << tree.basal_area() << "\n";
-//
-//	}
-	//std::cout << trees.size() << "\n";
-	//std::cout << weight << "\n";
+	char buffer[1000];
+	sprintf(buffer, "%6d %6d %12.3f %12.3f", simulation_year, trees.size(), weight, basal_area);
+	for (int i=0; i<npft(); i++) {
+		int ntrees_pft = 0;
+		double weight_pft = 0.;
+		double basal_area_pft = 0.;
+		for (auto& tree : trees) {
+			if (tree.pft.id == i) {
+				ntrees_pft++;
+				weight_pft += tree.weight();
+				basal_area_pft += tree.basal_area();
+			}
+		}
+		sprintf(buffer, "%s %6d %12.3f %12.3f", buffer,
+				ntrees_pft, weight_pft, basal_area_pft);
+	}
+
+	return std::string(buffer);
 }
 
 void Plot::birth() {
@@ -262,7 +305,12 @@ int Forest::nplots() {
 void Forest::advance() {
 	for (auto& plot : plots) {
 		plot.advance();
-		plot.print();
+	}
+}
+
+void Forest::dump_output() {
+	for (auto& plot : plots) {
+		std::cout << plot.info() << "\n";
 	}
 }
 
@@ -276,23 +324,24 @@ Forest::~Forest() {
 // ---------------------------- //
 
 void initialize_gap() {
+
 	// Populate pft vector
 	// Parameters from Botkin et al. (1972)
 	//
 	// 				Name        g      c  age_max              type  d_max  h_max    b2     b3 dgde_min dgde_max  wmin  wmax
-	pft_vector.push_back(Pft {"Sugar maple",   170., 1.57 ,     200,   SHADE_TOLERANT, 152.5, 4011., 50.9, 0.167,   2000.,   6300., 300.,  -1.});
-	pft_vector.push_back(Pft {"Beech", 	   150., 2.20 ,     300,   SHADE_TOLERANT, 122.0, 3660., 57.8, 0.237,   2100.,   6000., 300.,  -1.});
-	pft_vector.push_back(Pft {"Yellow birch",  100., 0.486,     300,            BIRCH, 122.0, 3050., 47.8, 0.196,   2000.,   5300., 250.,  -1.});
-	pft_vector.push_back(Pft {"White ash",     130., 1.75 ,     100,   SHADE_TOLERANT,  50.0, 2160., 80.2, 0.802,   2100.,  10700., 320.,  -1.});
-	pft_vector.push_back(Pft {"Mt. maple",     100., 1.13 ,      25,   SHADE_TOLERANT,  13.5,  500., 53.8, 2.0  ,   2000.,   6300., 320.,  -1.});
-	pft_vector.push_back(Pft {"Striped maple", 150., 1.75 ,      30,   SHADE_TOLERANT,  22.5, 1000., 76.6, 1.70 ,   2000.,   6300., 320.,  -1.});
-	pft_vector.push_back(Pft {"Pin cherry",    200., 2.45 ,      30,           CHERRY,  28.5, 1126., 70.6, 1.26 ,   1100.,   8000., 190.,  -1.});
-	pft_vector.push_back(Pft {"Choke cherry",  150., 2.45 ,      20,           CHERRY,  10.0,  500., 72.6, 3.63 ,    600.,  10000., 155.,  -1.});
-	pft_vector.push_back(Pft {"Balsam Fir",    200., 2.5  ,      80,   SHADE_TOLERANT,  50.0, 1830., 67.9, 0.679,   1100.,   3700., 190.,  -1.});
-	pft_vector.push_back(Pft {"Spruce",         50., 2.5  ,     350,   SHADE_TOLERANT,  50.0, 1830., 67.9, 0.679,    600.,   3700., 190.,  -1.});
-	pft_vector.push_back(Pft {"White birch",   140., 0.486,      80,            BIRCH,  46.0, 1830., 73.6, 0.800,   1100.,   3700., 190., 600.});
-	pft_vector.push_back(Pft {"Mt. ash",       150., 1.75 ,      30,   SHADE_TOLERANT,  10.0,  500., 72.6, 3.63 ,   2000.,   4000., 300.,  -1.});
-	pft_vector.push_back(Pft {"Red maple",     240., 1.75 ,     150,   SHADE_TOLERANT, 152.5, 3660., 46.3, 0.152,   2000.,  12400., 300.,  -1.});
+	pft_vector.push_back(Pft ("Sugar maple",   170., 1.57 ,     200,   SHADE_TOLERANT, 152.5, 4011., 50.9, 0.167,   2000.,   6300., 300.,  -1.));
+	pft_vector.push_back(Pft ("Beech", 	   150., 2.20 ,     300,   SHADE_TOLERANT, 122.0, 3660., 57.8, 0.237,   2100.,   6000., 300.,  -1.));
+	pft_vector.push_back(Pft ("Yellow birch",  100., 0.486,     300,            BIRCH, 122.0, 3050., 47.8, 0.196,   2000.,   5300., 250.,  -1.));
+	pft_vector.push_back(Pft ("White ash",     130., 1.75 ,     100,   SHADE_TOLERANT,  50.0, 2160., 80.2, 0.802,   2100.,  10700., 320.,  -1.));
+	pft_vector.push_back(Pft ("Mt. maple",     100., 1.13 ,      25,   SHADE_TOLERANT,  13.5,  500., 53.8, 2.0  ,   2000.,   6300., 320.,  -1.));
+	pft_vector.push_back(Pft ("Striped maple", 150., 1.75 ,      30,   SHADE_TOLERANT,  22.5, 1000., 76.6, 1.70 ,   2000.,   6300., 320.,  -1.));
+	pft_vector.push_back(Pft ("Pin cherry",    200., 2.45 ,      30,           CHERRY,  28.5, 1126., 70.6, 1.26 ,   1100.,   8000., 190.,  -1.));
+	pft_vector.push_back(Pft ("Choke cherry",  150., 2.45 ,      20,           CHERRY,  10.0,  500., 72.6, 3.63 ,    600.,  10000., 155.,  -1.));
+	pft_vector.push_back(Pft ("Balsam Fir",    200., 2.5  ,      80,   SHADE_TOLERANT,  50.0, 1830., 67.9, 0.679,   1100.,   3700., 190.,  -1.));
+	pft_vector.push_back(Pft ("Spruce",         50., 2.5  ,     350,   SHADE_TOLERANT,  50.0, 1830., 67.9, 0.679,    600.,   3700., 190.,  -1.));
+	pft_vector.push_back(Pft ("White birch",   140., 0.486,      80,            BIRCH,  46.0, 1830., 73.6, 0.800,   1100.,   3700., 190., 600.));
+	pft_vector.push_back(Pft ("Mt. ash",       150., 1.75 ,      30,   SHADE_TOLERANT,  10.0,  500., 72.6, 3.63 ,   2000.,   4000., 300.,  -1.));
+	pft_vector.push_back(Pft ("Red maple",     240., 1.75 ,     150,   SHADE_TOLERANT, 152.5, 3660., 46.3, 0.152,   2000.,  12400., 300.,  -1.));
 
 	// Vectors containing the indices of shade (in)tolerant trees on the pft_vector
 	for (int i=0; i<pft_vector.size(); i++) {
@@ -306,17 +355,46 @@ void initialize_gap() {
 		}
 	}
 
+	//for (auto& pft : pft_vector) {
+	//	std::cout << pft.id << " " << pft.name << "\n";
+	//}
+
 	// Initialize random number generator
 	srand(SEED);
 
 	// Set simulation year to 0
 	simulation_year = 0;
+
+	// Output header
+	// -------------
+	char buffer[1000];
+	sprintf(buffer,"%6s|%-32s", "", " PLOT");
+	for (auto& pft : pft_vector) {
+		//std::cout << pft.name << "\n";
+		sprintf(buffer, "%s| %-31s", buffer, pft.name.c_str());
+	}
+	sprintf(buffer, "%s|\n%-6s|%-6s|%-12s|%-12s", buffer, " Year", " #tr", " weight", " b. area");
+	for (auto& pft : pft_vector) {
+		//std::cout << pft.name << "\n";
+		sprintf(buffer,  "%s|%-6s|%-12s|%-12s",
+			buffer,
+			" #tr",
+			" weight",
+			" b. area");
+	}
+	output_header = buffer;
+	output_header += "|";
 }
 
 int npft() {
-	return pft_vector.size();
+	return Pft::npft;
 }
 
 void increase_simulation_year() {
 	simulation_year++;
 }
+
+std::string get_header() {
+	return output_header;
+}
+
