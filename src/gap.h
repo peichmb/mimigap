@@ -49,6 +49,10 @@ public:
 	double basal_area();
 	void set_sla(double s);
 	double get_sla();
+	
+	double r_light_test() {
+		return r_light();
+	}
 
 private:
 	int pft_id;

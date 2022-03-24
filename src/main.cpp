@@ -9,7 +9,9 @@
 #include <iostream>
 #include "gap.h"
 
-typedef enum {SINGLE_PLOT, FOREST} simulation_type;
+typedef enum {TEST, SINGLE_PLOT, FOREST} simulation_type;
+
+void simulate_test();
 
 void simulate_single_plot(int nyears);
 
@@ -26,6 +28,9 @@ int main() {
 	initialize_gap();
 
 	switch (sim_type) {
+	case TEST:
+		simulate_test();
+		break;
 	case SINGLE_PLOT:
 		simulate_single_plot(nyears);
 		break;
@@ -40,6 +45,16 @@ int main() {
 	return 0;
 }
 
+// TEST
+void simulate_test() {
+
+	Tree shade_tolerant(9);
+	for (int s=0; s<30000; s += 50) {
+		shade_tolerant.set_sla((double)s);
+		std::cout << s << "\t" << shade_tolerant.r_light_test() << "\n";
+	}
+}
+
 // Simulation of a single plot
 // (A forest could be simulated one plot at a time)
 void simulate_single_plot(int nyears) {
@@ -48,10 +63,10 @@ void simulate_single_plot(int nyears) {
 	for (int i=0; i<nyears; i++) {
 		// Simulate one year
 		plot.advance();
-		// Print out info
-		std::cout << plot.info() << "\n";
 		// Increase simulation year counter
 		increase_simulation_year();
+		// Print out info
+		std::cout << plot.info() << "\n";
 	}
 }
 
@@ -67,10 +82,10 @@ void simulate_forest(int nyears, int nplots) {
 	for (int year=0; year<nyears; year++) {
 		// Simulate one year
 		forest.advance();
-		// Print out plots info
-		forest.dump_output();
 		// Increase simulation year counter
 		increase_simulation_year();
+		// Print out plots info
+		forest.dump_output();
 	}
 }
 

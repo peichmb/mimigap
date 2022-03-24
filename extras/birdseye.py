@@ -54,12 +54,14 @@ def forest_density(data, year_range, column):
 def main():
 
     header, data = get_data(FNAME, NYEARS, NPLOTS)
-    #year = 350
-    #spatial_plots(data, year, FOREST_SHAPE)
+    year = 350
+    spatial_plots(data, year, FOREST_SHAPE)
     year_range = (0,500)
-    #plot = 0
-    #plot_density(data, plot, year_range)
+    plot = 0
+    plot_density(data, plot, year_range)
     forest_density(data, year_range, column=NUMBER_OF_TREES)
+    forest_density(data, year_range, column=WEIGHT)
+    forest_density(data, year_range, column=BASAL_AREA)
 
 
 if __name__ == '__main__':

@@ -17,10 +17,10 @@ namespace {
 	const int SEED = 74837891;
 
 	// Cherry trees establishment cutoff
-	const double CHERRY_CUTOFF = 1000.;
+	const double CHERRY_CUTOFF = 55.;
 
 	// Birch trees establishment cutoff
-	const double BIRCH_CUTOFF = 3000.;
+	const double BIRCH_CUTOFF = 1000.;
 
 	// Light extinction coefficient
 	const double K_EXT = 1/6000.;
@@ -78,13 +78,13 @@ Tree::Tree(int pft_id) : pft(pft_vector[pft_id]), pft_id(pft_id) {
 
 void Tree::growth() {
 
-	// Calculate change in tree diameter over 1 year (B79, Eq. 5)
+	// Calculate potential change in tree diameter over 1 year (B79, Eq. 5)
 	d_change = pft.g*d*(1.-d*h/(pft.d_max * pft.h_max))
 			/ (274 + 3.*pft.b2*d - 4.*pft.b3*d*d);
 
 	// Environmental factors affecting growth
-	double f_env = r_light();
-	d_change = d_change*f_env;
+	double f_env = 1;
+	d_change = d_change*f_env*r_light();
 
 	// Update diameter
 	d = d + d_change;
@@ -147,9 +147,9 @@ double Tree::r_light() {
 	double al = exp(-K_EXT*sla);
 
 	if (pft.type == SHADE_TOLERANT) {
-		return 1. - exp(-4.64*(al-0.05));
+		return std::max(1. - exp(-4.64*(al-0.05)),0.);
 	} else {
-		return 2.24*(1. - exp(-1.136*(al-0.08)));
+		return std::max(2.24*(1. - exp(-1.136*(al-0.08))),0.);
 	}
 }
 
@@ -168,13 +168,6 @@ Plot::Plot() {
 Plot::~Plot() {}
 
 void Plot::advance() {
-
-	weight = 0.;
-	basal_area = 0.;
-	for (auto& tree : trees) {
-		weight += tree.weight();
-		basal_area += tree.basal_area();
-	}
 
 	// Add new trees
 	birth();
@@ -278,12 +271,14 @@ void Plot::growth() {
 		tree.set_sla(sla);
 	}
 
-	// Nice bug to train debugging: forget the & in the line below
+	weight = 0.;
+	basal_area = 0.;
 	for (auto& tree : trees) {
 		// Grow tree
 		tree.growth();
-		// Add new tree's leaf mass to stand's total
+		// Add tree's weight and basal area to plot's total
 		weight += tree.weight();
+		basal_area += tree.basal_area();
 	}
 }
 
@@ -370,12 +365,10 @@ void initialize_gap() {
 	char buffer[1000];
 	sprintf(buffer,"%6s|%-32s", "", " PLOT");
 	for (auto& pft : pft_vector) {
-		//std::cout << pft.name << "\n";
 		sprintf(buffer, "%s| %-31s", buffer, pft.name.c_str());
 	}
 	sprintf(buffer, "%s|\n%-6s|%-6s|%-12s|%-12s", buffer, " Year", " #tr", " weight", " b. area");
 	for (auto& pft : pft_vector) {
-		//std::cout << pft.name << "\n";
 		sprintf(buffer,  "%s|%-6s|%-12s|%-12s",
 			buffer,
 			" #tr",
